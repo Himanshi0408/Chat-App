@@ -1,0 +1,243 @@
+{
+  "info": {
+    "_postman_id": "96a814af-5955-419e-bcc2-5bdf1c9835cd",
+    "name": "Chat-App",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "47523424",
+    "_collection_link": "https://go.postman.co/collection/47523424-96a814af-5955-419e-bcc2-5bdf1c9835cd?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Register",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"name\": \"Himanshi\",\r\n  \"email\": \"himanshi@gmail.com\",\r\n  \"password\": \"123456\"\r\n}\r\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:5000/api/auth/register",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5000",
+              "path": [
+                "api",
+                "auth",
+                "register"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"email\": \"himanshi@gmail.com\" ,\r\n  \"password\": \"123456\"\r\n}\r\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:5000/api/auth/login",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5000",
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Online users",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY5OTA2ZmRkODg4NTk3Y2FlMWJkOTgzNCIsImlhdCI6MTc3MTEzMDUzMiwiZXhwIjoxNzcxNzM1MzMyfQ.sK4TNGYHjObBjpiB2qIDj0S2Hgu5u2pYpjerdy1zSeQ",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:5000/api/users/online",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5000",
+              "path": [
+                "api",
+                "users",
+                "online"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get All users",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY5OTA2ZmRkODg4NTk3Y2FlMWJkOTgzNCIsImlhdCI6MTc3MTA3MzUyMCwiZXhwIjoxNzcxNjc4MzIwfQ.64Gg_TY5tQPSDRtNgtBD9B_Os7JBa2r0-kZDRkM9Jx0",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:5000/api/users",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5000",
+              "path": [
+                "api",
+                "users"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get my Profile",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY5OTA2ZmRkODg4NTk3Y2FlMWJkOTgzNCIsImlhdCI6MTc3MTA3MzUyMCwiZXhwIjoxNzcxNjc4MzIwfQ.64Gg_TY5tQPSDRtNgtBD9B_Os7JBa2r0-kZDRkM9Jx0",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:5000/api/users/me",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5000",
+              "path": [
+                "api",
+                "users",
+                "me"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Message",
+      "item": [
+        {
+          "name": "send message",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY5OTA2ZmRkODg4NTk3Y2FlMWJkOTgzNCIsImlhdCI6MTc3MTA3MzUyMCwiZXhwIjoxNzcxNjc4MzIwfQ.64Gg_TY5tQPSDRtNgtBD9B_Os7JBa2r0-kZDRkM9Jx0",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"receiverId\": \"699055f420cdfb4d630e87eb\",\r\n  \"content\": \"Hello Manshi!\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:5000/api/chat",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5000",
+              "path": [
+                "api",
+                "chat"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get chat history",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY5OTA2ZmRkODg4NTk3Y2FlMWJkOTgzNCIsImlhdCI6MTc3MTA3MzUyMCwiZXhwIjoxNzcxNjc4MzIwfQ.64Gg_TY5tQPSDRtNgtBD9B_Os7JBa2r0-kZDRkM9Jx0",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:5000/api/chat/699055f420cdfb4d630e87eb",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5000",
+              "path": [
+                "api",
+                "chat",
+                "699055f420cdfb4d630e87eb"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}
