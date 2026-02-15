@@ -185,7 +185,7 @@ export default function ChatWindow({ chatWith }) {
   const sendMessage = async (text) => {
     if (!text.trim()) return;
 
-    console.log(` Sending message to ${chatWith.name}:`, text);
+    console.log(`📤 Sending message to ${chatWith.name}:`, text);
     setIsSending(true);
 
     //  OPTIMISTIC UPDATE: Add message IMMEDIATELY to UI

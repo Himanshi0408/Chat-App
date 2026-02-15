@@ -185,7 +185,7 @@ export default function ChatWindow({ chatWith }) {
   const sendMessage = async (text) => {
     if (!text.trim()) return;
 
-    console.log(` Sending message to ${chatWith.name}:`, text);
+    console.log(`📤 Sending message to ${chatWith.name}:`, text);
     setIsSending(true);
 
     //  OPTIMISTIC UPDATE: Add message IMMEDIATELY to UI
@@ -214,7 +214,7 @@ export default function ChatWindow({ chatWith }) {
     addMessage(optimisticMessage);
 
     try {
-      //  Send to backend
+      // 2️⃣ Send to backend
       const response = await axios.post("/chat", {
         receiverId: chatWith._id,
         content: text.trim(),
@@ -222,7 +222,7 @@ export default function ChatWindow({ chatWith }) {
 
       console.log("Message sent successfully:", response.data.data);
 
-      //  UPDATE optimistic message with real server data
+      // 3️⃣ UPDATE optimistic message with real server data
       const serverMessage = response.data.data;
       tempMessageIdsRef.current.delete(tempId);
       replaceOptimisticMessage(tempId, serverMessage);
