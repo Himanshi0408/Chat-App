@@ -235,13 +235,4 @@ PORT=5000
 VITE_API_URL=http://localhost:5000/api
 ```
 
-##  Production Deployment
-
-**Backend**: Deploy to Heroku, Railway, or Render
-**Frontend**: Deploy to Vercel, Netlify, or GitHub Pages
-
-Update API URL in frontend when deploying.
-
----
-
 **Made with  for real-time communication**
