@@ -119,7 +119,7 @@ Open **http://localhost:5173** in browser → Ready to chat!
 - `POST /api/chat` — Send message
 - `GET /api/chat/:userId` — Fetch chat history
 
-## 🔌 Socket Events
+##  Socket Events
 
 ### Client → Server
 ```javascript
@@ -220,19 +220,5 @@ User A sends "Hello" to User B
 - Check MONGO_URI in .env
 - Ensure user exists with correct password
 - Check JWT_SECRET is set
-
-##  Environment Variables
-
-### Backend (.env)
-```
-MONGO_URI=mongodb://localhost:27017/chat-app
-JWT_SECRET=your_secret_key_min_20_chars
-PORT=5000
-```
-
-### Frontend (.env optional)
-```
-VITE_API_URL=http://localhost:5000/api
-```
 
 **Made with  for real-time communication**
