@@ -8,24 +8,20 @@ export const ChatProvider = ({ children }) => {
   const [onlineUsers, setOnlineUsers] = useState(new Set());
 
   const addMessage = useCallback((message) => {
-    console.log("Adding message to state:", message);
     setMessages(prev => {
       // For server messages, check if already exists by _id
       if (message._id) {
         const messageExists = prev.some(m => m._id === message._id);
         if (messageExists) {
-          console.log("Message already exists, skipping duplicate");
           return prev;
         }
       }
-      console.log("New message added. Total messages:", prev.length + 1);
       return [...prev, message];
     });
   }, []);
 
   // Replace optimistic message with server response
   const replaceOptimisticMessage = useCallback((tempId, serverMessage) => {
-    console.log(`Replacing optimistic message ${tempId} with server data`);
     setMessages(prev => {
       // Remove optimistic message, add server message
       const filtered = prev.filter(m => m.tempId !== tempId);
@@ -35,7 +31,6 @@ export const ChatProvider = ({ children }) => {
 
   // Remove failed optimistic message
   const removeOptimisticMessage = useCallback((tempId) => {
-    console.log(`Removing failed optimistic message ${tempId}`);
     setMessages(prev => prev.filter(m => m.tempId !== tempId));
   }, []);
 

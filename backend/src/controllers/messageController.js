@@ -1,8 +1,12 @@
 const Message = require("../models/Message");
+
 // Send msg
 exports.sendMessage = async (req, res) => {
   try {
     const { receiverId, content } = req.body;
+    const senderId = req.user._id;
+
+    // Message send request received
 
     // Validation
     if (!receiverId || !content) {
@@ -16,7 +20,7 @@ exports.sendMessage = async (req, res) => {
 
     // Create Message
     const newMessage = await Message.create({
-      sender: req.user._id,
+      sender: senderId,
       receiver: receiverId,
       content
     });
@@ -27,15 +31,44 @@ exports.sendMessage = async (req, res) => {
       { path: "receiver", select: "name profilePic" }
     ]);
 
-    // Emit message to both sender and receiver via socket
+    // Emit via socket
     const io = req.app.locals.io;
     if (io) {
-      console.log(`Emitting message to sender: ${req.user._id} and receiver: ${receiverId}`);
+      // Create chat room ID 
+      const chatRoomId = [senderId, receiverId].sort().join("_");
+      
+      // Emit message via Socket.io
+      io.to(chatRoomId).emit("receiveMessage", populatedMessage);
+      
+      // Also emit to individual user rooms (BACKUP)
+      io.to(senderId).emit("receiveMessage", populatedMessage);
       io.to(receiverId).emit("receiveMessage", populatedMessage);
-      io.to(req.user._id).emit("receiveMessage", populatedMessage);
+
+      // Send notification to receiver
+      const roomSockets = io.sockets.adapter.rooms.get(chatRoomId);
+      
+      // If receiver is not in chat room, send notification
+      if (!roomSockets || roomSockets.size < 2) {
+        
+        io.to(receiverId).emit("newNotification", {
+          _id: populatedMessage._id,
+          from: {
+            _id: populatedMessage.sender._id,
+            name: populatedMessage.sender.name,
+            profilePic: populatedMessage.sender.profilePic
+          },
+          messagePreview: content.substring(0, 50),
+          timestamp: new Date(),
+          isRead: false
+        });
+        // Notification emitted
+      }
+      
     } else {
-      console.warn("Socket.io instance not available in messageController");
+      console.error(" Socket.io instance not available!");
     }
+
+    // finished processing sendMessage
 
     res.status(201).json({
       statusCode: 201,
@@ -45,6 +78,7 @@ exports.sendMessage = async (req, res) => {
     });
 
   } catch (error) {
+    console.error(" Error sending message:", error);
     res.status(500).json({
       statusCode: 500,
       success: false,

@@ -1,5 +1,5 @@
-import { createContext, useState } from "react";
-import { disconnectSocket } from "../socket/socket";
+import { createContext, useState, useEffect } from "react";
+import { disconnectSocket, initSocket, getSocket } from "../socket/socket";
 
 export const AuthContext = createContext();
 
@@ -25,6 +25,23 @@ export const AuthProvider = ({ children }) => {
     localStorage.setItem("authToken", token);
     setUser(userData);
   };
+
+  // Initialize socket when user is present (so app-level listeners work)
+  useEffect(() => {
+    const token = localStorage.getItem("authToken");
+    if (user && token) {
+      try {
+        const socket = initSocket(token);
+        socket.on("connect", () => {
+          if (user && user._id) {
+            socket.emit("join", user._id);
+          }
+        });
+      } catch (err) {
+        console.error("Failed to init socket in AuthProvider:", err);
+      }
+    }
+  }, [user]);
 
   const logout = () => {
     localStorage.removeItem("user");

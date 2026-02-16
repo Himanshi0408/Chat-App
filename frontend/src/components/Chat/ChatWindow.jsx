@@ -7,16 +7,16 @@ import axios from "../../api/axios";
 
 export default function ChatWindow({ chatWith }) {
   const { user } = useContext(AuthContext);
-  const { messages, setMessagesForChat, addMessage, replaceOptimisticMessage, removeOptimisticMessage, updateOnlineUsers } =
+  const { messages: contextMessages, setMessagesForChat, updateOnlineUsers } =
     useContext(ChatContext);
 
+  const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isSending, setIsSending] = useState(false);
   const [recipientOnline, setRecipientOnline] = useState(false);
   const [notification, setNotification] = useState(null);
-  const messagesEndRef = useRef(null);
-  const tempMessageIdsRef = useRef(new Set()); 
+  const messagesEndRef = useRef(null); 
   // FETCH CHAT HISTORY
   useEffect(() => {
     if (!chatWith?._id) return;
@@ -26,29 +26,27 @@ export default function ChatWindow({ chatWith }) {
         setLoading(true);
         setError(null);
 
-        console.log(`📥 Fetching chat history with user: ${chatWith._id}`);
+        // Loading chat history
         const { data: response } = await axios.get(`/chat/${chatWith._id}`);
-        console.log("Response received:", response);
-        console.log("Messages data:", response.data);
         
         if (Array.isArray(response.data)) {
-          console.log(`✓ Loaded ${response.data.length} messages`);
-          setMessagesForChat(response.data);
+          // Loaded messages
+          setMessages(response.data);
         } else {
-          console.error("response.data is not an array:", response.data);
-          setMessagesForChat([]);
+          console.error("❌ Invalid response:", response.data);
+          setMessages([]);
         }
       } catch (err) {
-        console.error("Failed to fetch chat history:", err);
-        setError("Failed to load chat history");
-        setMessagesForChat([]);
+        console.error("❌ Failed to load chat:", err.message);
+        setError("Failed to load chat");
+        setMessages([]);
       } finally {
         setLoading(false);
       }
     }
 
     fetchChatHistory();
-  }, [chatWith?._id, setMessagesForChat]);
+  }, [chatWith?._id]);
 
   // SOCKET CONNECTION INIT
   useEffect(() => {
@@ -58,16 +56,7 @@ export default function ChatWindow({ chatWith }) {
     const socket = initSocket(token);
 
     const handleConnect = () => {
-      console.log("Connected to server");
       socket.emit("join", user._id);
-    };
-
-    const handleConnectError = (error) => {
-      console.error("Socket connection error:", error);
-    };
-
-    const handleDisconnect = () => {
-      console.log("Disconnected from server");
     };
 
     if (socket && !socket.connected) {
@@ -76,72 +65,96 @@ export default function ChatWindow({ chatWith }) {
       socket.emit("join", user._id);
     }
 
-    socket.on("connect_error", handleConnectError);
-    socket.on("disconnect", handleDisconnect);
+    socket.on("connect_error", (error) => {
+      console.error("🔴 Socket error:", error.message);
+    });
+
+    // NOTIFICATION LISTENER - Listen for messages when user not in chat
+    const handleNewNotification = (notification) => {
+      // Show notification toast
+      showNotification(
+        `New message from ${notification.from.name}: "${notification.messagePreview}"`,
+        "message"
+      );
+    };
+
+    socket.on("newNotification", handleNewNotification);
 
     return () => {
       socket.off("connect", handleConnect);
-      socket.off("connect_error", handleConnectError);
-      socket.off("disconnect", handleDisconnect);
+      socket.off("connect_error");
+      socket.off("newNotification", handleNewNotification);
     };
   }, [user?._id]);
+
+  // JOIN CHAT ROOM WHEN CHAT CHANGES
+  useEffect(() => {
+    const socket = getSocket();
+    if (!socket || !chatWith?._id || !user?._id) {
+      console.warn("⚠️ Not ready to join chat room");
+      return;
+    }
+
+    const chatRoomId = [user._id, chatWith._id].sort().join("_");
+    
+    socket.emit("joinChatRoom", chatRoomId);
+  }, [chatWith?._id, user?._id]);
 
   //REAL TIME MSG LISTENER
   useEffect(() => {
     const socket = getSocket();
-    if (!socket || !chatWith?._id || !user?._id) return;
+    if (!socket) {
+      console.error("❌ Socket not initialized");
+      return;
+    }
+    if (!chatWith?._id || !user?._id) {
+      console.warn("⚠️ Chat or user not ready");
+      return;
+    }
+
+    // Setting up message listener for current chat
 
     const handleReceiveMessage = (msg) => {
-      console.log("📨 Message received via socket:", msg);
+      // Received message event
       
-      // Check if this is for current chat
-      const isForCurrentChat = (
+      // Check if message is for current chat
+      const isRelevant = (
         (msg.sender._id === chatWith._id && msg.receiver._id === user._id) ||
         (msg.sender._id === user._id && msg.receiver._id === chatWith._id)
       );
 
-      if (!isForCurrentChat) {
-        console.log("✗ Message is not for current chat");
-        return;
-      }
+      if (!isRelevant) return;
 
-      console.log("✓ Message is for current chat");
-
-      // Check if this is a message we just sent (optimistic update already in UI)
-      const hasPendingMessage = messages.some(m => 
-        m.tempId && 
-        m.sender._id === msg.sender._id &&
-        m.receiver._id === msg.receiver._id &&
-        m.content === msg.content
-      );
-
-      if (hasPendingMessage) {
-        console.log("✓ This is our sent message, replacing optimistic with real data");
-        // Find and replace the optimistic message
-        const tempId = messages.find(m => 
-          m.tempId && 
-          m.sender._id === msg.sender._id &&
-          m.receiver._id === msg.receiver._id &&
-          m.content === msg.content
-        )?.tempId;
+      // Update messages with smart duplicate detection
+      setMessages(prev => {
+        // Check if message already exists (by real ID or optimistic ID)
+        const isDuplicate = prev.some(m => 
+          m._id === msg._id || 
+          (m.tempId && m.content === msg.content && m.sender._id === msg.sender._id)
+        );
         
-        if (tempId) {
-          tempMessageIdsRef.current.delete(tempId);
-          replaceOptimisticMessage(tempId, msg);
+        if (isDuplicate) {
+          // Replace optimistic with real
+          return prev.map(m => 
+            (m.tempId && m.content === msg.content && m.sender._id === msg.sender._id) 
+              ? msg 
+              : m
+          );
+        } else {
+          // New message from recipient
+          return [...prev, msg];
         }
-      } else {
-        // This is a new message from recipient
-        console.log("✓ New message from recipient, adding...");
-        addMessage(msg);
-      }
+      });
     };
 
+    // Register listener
     socket.on("receiveMessage", handleReceiveMessage);
 
+    // Cleanup
     return () => {
       socket.off("receiveMessage", handleReceiveMessage);
     };
-  }, [chatWith?._id, user?._id, addMessage, replaceOptimisticMessage, messages]);
+  }, [chatWith?._id, user?._id]);
 
   // STATUS LISTENER
   useEffect(() => {
@@ -185,14 +198,16 @@ export default function ChatWindow({ chatWith }) {
   const sendMessage = async (text) => {
     if (!text.trim()) return;
 
-    console.log(` Sending message to ${chatWith.name}:`, text);
+    const tempId = `temp_${Date.now()}_${Math.random()}`;
+    
+    // Sending message 
+
     setIsSending(true);
 
-    //  OPTIMISTIC UPDATE: Add message IMMEDIATELY to UI
-    const tempId = `temp_${Date.now()}_${Math.random()}`;
+    // Create optimistic message 
     const optimisticMessage = {
-      tempId, 
-      _id: tempId, 
+      tempId,
+      _id: tempId,
       sender: {
         _id: user._id,
         name: user.name,
@@ -206,36 +221,32 @@ export default function ChatWindow({ chatWith }) {
       content: text.trim(),
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
-      sending: true 
+      sending: true
     };
 
     // Add to UI immediately
-    tempMessageIdsRef.current.add(tempId);
-    addMessage(optimisticMessage);
+    setMessages(prev => [...prev, optimisticMessage]);
 
     try {
-      //  Send to backend
+      // Send to backend
       const response = await axios.post("/chat", {
         receiverId: chatWith._id,
         content: text.trim(),
       });
 
-      console.log("Message sent successfully:", response.data.data);
-
-      //  UPDATE optimistic message with real server data
       const serverMessage = response.data.data;
-      tempMessageIdsRef.current.delete(tempId);
-      replaceOptimisticMessage(tempId, serverMessage);
-
-      showNotification("Message sent", "success");
-    } catch (err) {
-      console.error("Failed to send message:", err);
-      setError("Failed to send message");
-      showNotification("Failed to send message", "error");
       
-      // Remove failed optimistic message
-      tempMessageIdsRef.current.delete(tempId);
-      removeOptimisticMessage(tempId);
+      // Server response received, replacing optimistic message
+      
+      setMessages(prev => 
+        prev.map(m => m.tempId === tempId ? serverMessage : m)
+      );
+      // Replaced optimistic message
+    } catch (err) {
+      console.error(" Send failed:", err.message);
+      setError("Message failed to send");
+      // Remove failed message
+      setMessages(prev => prev.filter(m => m.tempId !== tempId));
     } finally {
       setIsSending(false);
     }

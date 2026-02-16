@@ -3,58 +3,44 @@ const User = require("../models/User");
 
 const socketHandler = (io) => {
   let onlineUsers = new Map();
+  let chatRooms = new Map();
 
   io.on("connection", async (socket) => {
-    console.log(`User connected: ${socket.userId} | Socket: ${socket.id}`);
 
     // Add socket to onlineUsers
     if (!onlineUsers.has(socket.userId)) onlineUsers.set(socket.userId, new Set());
     onlineUsers.get(socket.userId).add(socket.id);
 
-    // Mark user as online in database
     await User.findByIdAndUpdate(socket.userId, { isOnline: true });
 
-    // Broadcast online status and updated list
+    // Broadcast online status
     io.emit("userOnline", { userId: socket.userId, isOnline: true });
     io.emit("onlineUsersList", Array.from(onlineUsers.keys()));
 
-    // Join user to their own room for targeted messaging
     socket.on("join", (userId) => {
       socket.join(userId);
-      console.log(`User ${userId} joined room ${userId}`);
     });
 
-    // Send message
-
-    socket.on("sendMessage", async (data) => {
-      try {
-        io.to(data.receiver).emit("receiveMessage", data);
-        io.to(data.sender).emit("receiveMessage", data);
-
-        const receiverSockets = onlineUsers.get(data.receiver);
-        if (receiverSockets) {
-          receiverSockets.forEach((sid) => {
-            io.to(sid).emit("messageNotification", {
-              from: data.sender,
-              senderName: data.senderName,
-              message: data.content,
-              timestamp: data.createdAt,
-            });
-          });
-        }
-
-      } catch (err) {
-        console.error("Error sending message:", err);
+    // Join chat room
+    socket.on("joinChatRoom", (chatRoomId) => {
+      socket.join(chatRoomId);
+      
+      if (!chatRooms.has(chatRoomId)) {
+        chatRooms.set(chatRoomId, new Set());
       }
+      chatRooms.get(chatRoomId).add(socket.id);
+
+      const roomSize = io.sockets.adapter.rooms.get(chatRoomId)?.size || 0;
+
+      // Socket joined chat room
     });
 
-    // Handle user disconnect
+    // Handle disconnect
     socket.on("disconnect", async () => {
       try {
         const sockets = onlineUsers.get(socket.userId);
         if (sockets) {
           sockets.delete(socket.id);
-          // If no more sockets for this user, mark as offline
           if (sockets.size === 0) {
             onlineUsers.delete(socket.userId);
 
@@ -67,11 +53,18 @@ const socketHandler = (io) => {
           }
         }
 
-        // Update online users list
+        // Clean up chat rooms
+        for (let [roomId, roomSockets] of chatRooms) {
+          roomSockets.delete(socket.id);
+          if (roomSockets.size === 0) {
+            chatRooms.delete(roomId);
+          }
+        }
+
         io.emit("onlineUsersList", Array.from(onlineUsers.keys()));
-        console.log(`User disconnected: ${socket.userId} | Socket: ${socket.id}`);
+        // Socket disconnected
       } catch (err) {
-        console.error("Error on disconnect:", err);
+        console.error(" Error on disconnect:", err);
       }
     });
   });

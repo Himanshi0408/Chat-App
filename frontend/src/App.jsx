@@ -5,11 +5,13 @@ import Register from "./components/Auth/Register";
 import Dashboard from "./pages/Dashboard";
 import { AuthProvider, AuthContext } from "./context/AuthContext";
 import { ChatProvider } from "./context/ChatContext";
+import NotificationToast from "./components/Shared/NotificationToast";
 
 function App() {
   return (
     <AuthProvider>
       <ChatProvider>
+        <NotificationToast />
         <Router>
           <Routes>
             <Route path="/login" element={<Login />} />

@@ -15,15 +15,15 @@ export const initSocket = (token) => {
     });
 
     socket.on("connect", () => {
-      console.log("✓ Socket connected:", socket.id);
+      // socket connected
     });
 
     socket.on("disconnect", () => {
-      console.log("✗ Socket disconnected");
+      // socket disconnected
     });
 
     socket.on("connect_error", (error) => {
-      console.error("✗ Socket connection error:", error);
+      console.error("Socket connection error:", error);
     });
   }
   return socket;

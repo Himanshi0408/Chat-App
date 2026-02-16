@@ -207,6 +207,98 @@
           "response": []
         },
         {
+          "name": "retrieve notification",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY5OTA2ZmRkODg4NTk3Y2FlMWJkOTgzNCIsImlhdCI6MTc3MTIyMDY1NywiZXhwIjoxNzcxODI1NDU3fQ.Vessgu1mHflD1OqqQEVN0sGfaKXYevJZJ3iByU6knXA",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:5000/api/notifications",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5000",
+              "path": [
+                "api",
+                "notifications"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "read notifications",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY5OTA2ZmRkODg4NTk3Y2FlMWJkOTgzNCIsImlhdCI6MTc3MTIyMDY1NywiZXhwIjoxNzcxODI1NDU3fQ.Vessgu1mHflD1OqqQEVN0sGfaKXYevJZJ3iByU6knXA",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:5000/api/notifications/6992b13dda009ef1d2718c16/read",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5000",
+              "path": [
+                "api",
+                "notifications",
+                "6992b13dda009ef1d2718c16",
+                "read"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "delete notifications",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY5OTA2ZmRkODg4NTk3Y2FlMWJkOTgzNCIsImlhdCI6MTc3MTIyMDY1NywiZXhwIjoxNzcxODI1NDU3fQ.Vessgu1mHflD1OqqQEVN0sGfaKXYevJZJ3iByU6knXA",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:5000/api/notifications",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5000",
+              "path": [
+                "api",
+                "notifications"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
           "name": "Get chat history",
           "request": {
             "auth": {

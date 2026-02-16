@@ -1,4 +1,3 @@
-
 require("dotenv").config();
 
 const express = require("express");
@@ -21,6 +20,7 @@ app.use(express.json());
 app.use("/api/auth", require("./src/routes/authRoutes"));
 app.use("/api/chat", require("./src/routes/messageRoutes"));
 app.use("/api/users", require("./src/routes/userRoutes"));
+app.use("/api/notifications", require("./src/routes/notificationRoutes"));
 
 const server = http.createServer(app);
 
